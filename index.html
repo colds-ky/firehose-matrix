@@ -1,1 +1,139 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Firehose Geiger</title>
+
+<link rel="shortcut icon" href="keanu-64.jpg" type="image/jpg">
+<link rel="icon" href="keanu-64.jpg" type="image/jpg">
+<link rel="apple-touch-icon" href="keanu-64.jpg" type="image/jpg">
+
+<style>
+html, body {
+  margin: 0; padding: 0;
+  height: 100%;
+  background: black;
+  color: lime;
+  overflow: hidden;
+}
+
+body {
+  display: grid;
+  grid-template-rows: 1fr auto 1fr;
+  grid-template-columns: 1fr;
+  align-items: center;
+  justify-items: center;
+}
+
+#sample1, #sample2 {
+  grid-row: 1;
+  grid-column: 1;
+  align-self: end;
+  padding: 2vw;
+  color: transparent;
+  font-family: monospace;
+  font-size: 4vw;
+  text-shadow: 0 0 #009800, 0 0 8px lime;
+  overflow: hidden;
+}
+
+button {
+  background: transparent;
+  color: inherit;
+  font-size: 4vw;
+  min-width: 50vw;
+  border: solid 0.4vw lime;
+  border-radius: 0.7vw;
+  padding: 2vw 4vw;
+  font-family: monospace;
+  cursor: pointer;
+}
+
+button {
+  text-shadow:
+    0 0 4px lime,
+    0 0 40px lime,
+    0 0 40px lime,
+    0 0 60px lime,
+    0 0 60px lime;
+  box-shadow:
+    0 0 10px lime,
+    0 0 12px lime inset;
+}
+
+.letter {
+  position: absolute;
+  top: -20vh;
+  margin-left: -0.5em;
+  transition: transform 20s linear;
+  
+  font-family: monospace;
+  opacity: 0.6;
+  font-size: 5vw;
+  color: transparent;
+  text-shadow: 0 0 4px lime;
+  
+  line-height: 0.9;
+}
+
+.letter .letter-2 {
+  opacity: 0.5;
+  text-shadow:
+    0 0 4px lime,
+    0 -5px 4px lime;
+}
+
+.letter .letter-3 {
+  opacity: 0.25;
+  text-shadow:
+    0 0 4px lime,
+    0 -5px 4px lime,
+    0 -10px 4px lime;
+}
+
+.letter .letter-4 {
+  opacity: 0.17;
+  text-shadow:
+    0 0 4px lime,
+    0 -5px 4px lime,
+    0 -9px 4px lime,
+    0 -14px 4px lime;
+}
+
+.letter .letter-5 {
+  opacity: 0.14;
+  text-shadow:
+    0 0 4px lime,
+    0 -5px 4px lime,
+    0 -9px 4px lime,
+    0 -14px 4px lime,
+    0 -18px 4px lime;
+}
+</style>
+</head>
+<body>
+
+<div id=sample1></div>
+<div id=sample2></div>
+<button>
+  Loading...
+</button>
+
+<div style="
+  font-family: Monospace;
+  align-self: end; justify-self: end;
+  padding: 0.25em 0.5em;
+  color: #05b105;
+  text-shadow:
+    0 0 6px lime,
+    -14px 0 26px lime,
+    14px 0 26px lime;">
+  Oleg Mihailik
+</div>
+
+<script src="index.js"></script>
+  
+</body>
+</html>
