@@ -9,7 +9,7 @@ var lastSample = sample2;
 var lastSampleChange = Date.now();
 var lastLetter = Date.now();
 var flyingLetterCount = 0;
- 
+
 function startPlaying() {
   if (!oscillator) {
     // create web audio api context
@@ -31,12 +31,12 @@ function startPlaying() {
 
   button.onclick = stopPlaying;
   button.textContent = 'Connecting 50Hz...';
-  
+
   oscillator.frequency.value = 50;
   oscillator.frequency.setValueAtTime(50, audioCtx.currentTime);
 
   oscillator.start(0);
-  
+
   let lastSnapshot = Date.now();
   let msgCount = 0;
   let lastMsg;
@@ -45,14 +45,14 @@ function startPlaying() {
   document.body.onclick = playCurrent;
   document.body.onmousedown = playCurrent;
   document.body.onmouseup = playCurrent;
-  
+
   pumpFirehose();
 
   async function pumpFirehose() {
     const playing = currentPlaying = currentPlaying + 1;
 
     for await (const blockList of coldsky.firehose()) {
-      if (currentPlaying !== playing)  return;
+      if (currentPlaying !== playing) return;
       for (const block of blockList) {
         msgCount +=
           (block.messages?.length || 0) +
@@ -61,29 +61,29 @@ function startPlaying() {
           for (const rec of block.messages) {
             if (!rec.text) continue;
             lastMsg = rec;
-            
+
             if (flyingLetterCount < 600) {
               lastLetter = Date.now();
               flyingLetterCount++;
               const letters = [...rec.text.replace(/\s/g, '')];
-              
-              
+
+
               const flyTimeSec = 6 + Math.random() * 30;
 
               const letterElem = document.createElement('div');
               letterElem.className = 'letter';
               letterElem.style.left = (Math.random() * 100) + '%';
               letterElem.style.transitionDuration = flyTimeSec.toFixed(1) + 's';
-              
+
               for (let i = 0; i < Math.min(5, letters.length); i++) {
                 const letter = letters[i];
                 const letterXElem = document.createElement('div');
-                letterXElem.className = 'letter-' + (i+1);
+                letterXElem.className = 'letter-' + (i + 1);
                 letterXElem.textContent = letter.toUpperCase();
                 if (letterElem.firstChild) letterElem.insertBefore(letterXElem, letterElem.firstChild);
                 else letterElem.appendChild(letterXElem);
               }
-              
+
               document.body.appendChild(letterElem);
               setTimeout(() => {
                 letterElem.style.transform = 'translateY(125vh)';
@@ -96,24 +96,24 @@ function startPlaying() {
           }
         }
       }
-      
+
       playCurrent();
       await new Promise(
         resolve => setTimeout(resolve, 3));
     }
   }
-  
+
   function playCurrent() {
     if (msgCount < 5) return;
     const now = Date.now();
-    
+
     const freq = msgCount / (now - lastSnapshot) * 1000;
     const gain = freq > 200 ? 1 :
       (201 - freq) / 200 * 5;
-    
+
     const targetTime =
-          audioCtx.currentTime +
-          ((now - lastSnapshot) / 3000);
+      audioCtx.currentTime +
+      ((now - lastSnapshot) / 3000);
 
     oscillator.frequency.setValueAtTime(
       Math.max(freq, 16),
@@ -127,7 +127,7 @@ function startPlaying() {
       var nextSample = lastSample === sample1 ? sample2 : sample1;
       nextSample.textContent = '';
       const lines = (lastMsg.text || '').split('\n');
-      for (const ln of lines.slice(0,5)) {
+      for (const ln of lines.slice(0, 5)) {
         const lnDiv = document.createElement('div');
         lnDiv.textContent = ln;
         nextSample.appendChild(lnDiv);
@@ -141,12 +141,12 @@ function startPlaying() {
         set1.style.opacity = 1;
         set0.style.opacity = 0;
       }, 0);
-      
+
       lastSampleChange = now;
       lastSample = nextSample;
     }
 
-    console.log({ msgCount, elapsed: now - lastSampleChange});
+    console.log({ msgCount, elapsed: now - lastSampleChange });
 
     msgCount = 0;
     lastSnapshot = now;
@@ -154,7 +154,7 @@ function startPlaying() {
   };
 
 }
-  
+
 function stopPlaying() {
   currentPlaying++;
   button.onclick = startPlaying;
