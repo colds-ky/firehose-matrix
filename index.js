@@ -117,7 +117,11 @@ function startPlaying() {
 
     if (lastFreq) {
       const steps = [];
-      for (let i = 0.001; i < targetTime - audioCtx.currentTime; i += 0.0025) {
+      const timeStep = Math.max(
+        Math.min(3 / lastFreq, 3 / freq),
+        0.0025);
+
+      for (let i = timeStep; i < targetTime - audioCtx.currentTime - timeStep; i += timeStep) {
         const tm = audioCtx.currentTime + i;
         const tmFreq = lastFreq + (freq - lastFreq) * (i / (targetTime - audioCtx.currentTime));
         const tmGain = tmFreq > 200 ? 1 : (201 - tmFreq) / 200 * 5
