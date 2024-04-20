@@ -9,6 +9,7 @@ var lastSample = sample2;
 var lastSampleChange = Date.now();
 var lastLetter = Date.now();
 var flyingLetterCount = 0;
+var lastFreq = 0;
 
 function startPlaying() {
   if (!oscillator) {
@@ -99,7 +100,7 @@ function startPlaying() {
 
       playCurrent();
       await new Promise(
-        resolve => setTimeout(resolve, 3));
+        resolve => setTimeout(resolve, 30));
     }
   }
 
@@ -107,20 +108,29 @@ function startPlaying() {
     if (msgCount < 5) return;
     const now = Date.now();
 
-    const freq = msgCount / (now - lastSnapshot) * 1000;
-    const gain = freq > 200 ? 1 :
-      (201 - freq) / 200 * 5;
+    const freq = Math.max(msgCount / (now - lastSnapshot) * 1000, 16);
+    const gain = freq > 200 ? 1 : (201 - freq) / 200 * 5;
 
     const targetTime =
       audioCtx.currentTime +
-      ((now - lastSnapshot) / 3000);
+      ((now - lastSnapshot) / 2000);
 
-    oscillator.frequency.setValueAtTime(
-      Math.max(freq, 16),
-      targetTime);
-    gainNode.gain.setValueAtTime(
-      gain,
-      targetTime);
+    if (lastFreq) {
+      const steps = [];
+      for (let i = 0.001; i < targetTime - audioCtx.currentTime; i += 0.0025) {
+        const tm = audioCtx.currentTime + i;
+        const tmFreq = lastFreq + (freq - lastFreq) * (i / (targetTime - audioCtx.currentTime));
+        const tmGain = tmFreq > 200 ? 1 : (201 - tmFreq) / 200 * 5
+
+        oscillator.frequency.setValueAtTime(tmFreq, tm);
+        gainNode.gain.setValueAtTime(tmGain, tm);
+        steps.push(tmFreq);
+      }
+    }
+    oscillator.frequency.setValueAtTime(freq, targetTime);
+    gainNode.gain.setValueAtTime(gain, targetTime);
+
+    lastFreq = freq;
 
     button.textContent = Math.round(msgCount / (now - lastSnapshot) * 1000) + 'Hz firehose...';
     if (lastMsg && now - lastSampleChange > 600) {
