@@ -2,7 +2,11 @@ const button = document.querySelector('button');
 button.onclick = startPlaying;
 
 var currentPlaying = 0;
-var audioCtx, oscillator, gainNode;
+/** @type {AudioContext} */
+var audioCtx;
+/** @type {OscillatorNode} */
+var oscillator;
+var gainNode;
 var sample1 = document.querySelector('#sample1');
 var sample2 = document.querySelector('#sample2');
 var lastSample = sample2;
@@ -19,6 +23,7 @@ function startPlaying() {
 
     // create Oscillator and gain node
     oscillator = audioCtx.createOscillator();
+    // oscillator.type = 'square';
     oscillator.detune.value = 99;
     gainNode = audioCtx.createGain();
     gainNode.gain.value = 5;
