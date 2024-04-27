@@ -113,8 +113,13 @@ function startPlaying() {
     if (msgCount < 5) return;
     const now = Date.now();
 
-    const freq = Math.max(msgCount / (now - lastSnapshot) * 1000, 16);
-    const gain = freq > 200 ? 1 : (201 - freq) / 200 * 5;
+    let freq = msgCount / (now - lastSnapshot) * 1000;
+    const FREQ_START_ADJUST = 40;
+    const FREQ_MIN = 9;
+    const FREQ_AMPLIFY_LOW = 200;
+
+    if (freq < FREQ_START_ADJUST) freq = freq * (FREQ_START_ADJUST - FREQ_MIN) / FREQ_START_ADJUST + FREQ_MIN;
+    const gain = freq > FREQ_AMPLIFY_LOW ? 1 : (FREQ_AMPLIFY_LOW + 1 - freq) / FREQ_AMPLIFY_LOW * 7;
 
     const targetTime =
       audioCtx.currentTime +
