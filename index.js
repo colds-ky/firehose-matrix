@@ -146,7 +146,9 @@ function startPlaying() {
 
     lastFreq = freq;
 
-    button.textContent = Math.round(msgCount / (now - lastSnapshot) * 1000) + 'Hz firehose...';
+    const hz = Math.round(msgCount / (now - lastSnapshot) * 1000);
+    button.textContent = hz + 'Hz firehose...';
+    document.title = 'Firehose Geiger ' + hz + 'Hz';
     if (lastMsg && now - lastSampleChange > 600) {
       var nextSample = lastSample === sample1 ? sample2 : sample1;
       nextSample.textContent = '';
@@ -183,6 +185,7 @@ function stopPlaying() {
   currentPlaying++;
   button.onclick = startPlaying;
   button.textContent = 'Listen again!';
+  document.title = 'Firehose Geiger';
   oscillator.stop();
   oscillator = undefined;
 }
