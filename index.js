@@ -1,4 +1,6 @@
-const button = document.querySelector('button');
+// @ts-check
+
+const button = /** @type {HTMLButtonElement} */(document.querySelector('button'));
 button.onclick = startPlaying;
 
 var currentPlaying = 0;
@@ -14,8 +16,11 @@ var lastSampleChange = Date.now();
 var lastLetter = Date.now();
 var flyingLetterCount = 0;
 var lastFreq = 0;
+var startPlayingTime;
 
 function startPlaying() {
+  startPlayingTime = Date.now();
+
   if (!oscillator) {
     // create web audio api context
     const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -114,9 +119,9 @@ function startPlaying() {
     const now = Date.now();
 
     let freq = msgCount / (now - lastSnapshot) * 1000;
-    const FREQ_START_ADJUST = 40;
-    const FREQ_MIN = 9;
-    const FREQ_AMPLIFY_LOW = 200;
+    var FREQ_START_ADJUST = 40;
+    var FREQ_MIN = 9;
+    var FREQ_AMPLIFY_LOW = 200;
 
     if (freq < FREQ_START_ADJUST) freq = freq * (FREQ_START_ADJUST - FREQ_MIN) / FREQ_START_ADJUST + FREQ_MIN;
     const gain = freq > FREQ_AMPLIFY_LOW ? 1 : (FREQ_AMPLIFY_LOW + 1 - freq) / FREQ_AMPLIFY_LOW * 7;
@@ -147,6 +152,7 @@ function startPlaying() {
     lastFreq = freq;
 
     const hz = Math.round(msgCount / (now - lastSnapshot) * 1000);
+    addChartFreq(msgCount);
     button.textContent = hz + 'Hz firehose...';
     document.title = 'Firehose Geiger ' + hz + 'Hz';
     if (lastMsg && now - lastSampleChange > 600) {
@@ -176,8 +182,86 @@ function startPlaying() {
 
     msgCount = 0;
     lastSnapshot = now;
+  }
+}
 
-  };
+/**
+ * @type {{
+ *  start: number;
+ *  end: number;
+ *  messages: number;
+ *  elem: HTMLElement;
+ * }[]}
+ */
+var chartFreqs = [];
+
+var CHART_FREQ_COUNT = 50;
+var CHART_FREQ_INTERVAL_MSEC = 1500;
+var minichart;
+var minichartHeightVw = 10;
+
+/**
+* @param {number} msgCount
+*/
+function addChartFreq(msgCount) {
+
+  if (!minichart) {
+    minichart = /** @type {HTMLElement} */(document.getElementById('minichart'));
+    minichart.style.height = '10vw';
+    minichartHeightVw = 10 * button.getBoundingClientRect().height / minichart.getBoundingClientRect().height;
+    minichart.style.height = '100%';
+  }
+
+  const now = Date.now();
+
+  if (!chartFreqs.length || now - chartFreqs[chartFreqs.length - 1].start > CHART_FREQ_INTERVAL_MSEC) {
+    chartFreqs.push({
+      start: chartFreqs.length ? chartFreqs[chartFreqs.length - 1].end : startPlayingTime,
+      end: now,
+      messages: msgCount,
+      elem: document.createElement('div')
+    });
+    chartFreqs[chartFreqs.length - 1].elem.className = 'chart-freq';
+    minichart.appendChild(chartFreqs[chartFreqs.length - 1].elem);
+    if (chartFreqs.length > CHART_FREQ_COUNT) {
+      const cf = chartFreqs.shift();
+      cf?.elem.remove();
+    }
+  } else {
+    chartFreqs[chartFreqs.length - 1].end = now;
+    chartFreqs[chartFreqs.length - 1].messages += msgCount;
+  }
+
+  updateTransforms();
+
+  function updateTransforms() {
+    let maxFreq = chartFreqs[0].messages / (now - chartFreqs[0].start) * 1000;
+    let allEqual = true;
+    for (const cf of chartFreqs) {
+      const freq = cf.messages / (cf.end - cf.start) * 1000;
+      if (freq > maxFreq) {
+        maxFreq = freq;
+      }
+
+      if (freq !== maxFreq) allEqual = false;
+    }
+
+    const w = (92 / CHART_FREQ_COUNT).toFixed(1) + '%';
+    for (let i = 0; i < chartFreqs.length; i++) {
+      const cf = chartFreqs[i];
+      const freq = cf.messages / (cf.end - cf.start) * 1000;
+      const tr = allEqual ? 'translateY(-' + (minichartHeightVw / 2).toFixed(1) + 'vw)' :
+        'translateY(-' + (0.1 + 0.7 * minichartHeightVw * freq / maxFreq).toFixed(1) + 'vw)';
+
+      if (cf.elem.style.transform !== tr)
+        cf.elem.style.transform = tr;
+      const left = (100 * (i + CHART_FREQ_COUNT - chartFreqs.length) / CHART_FREQ_COUNT).toFixed(1) + '%';
+      if (cf.elem.style.left !== left)
+        cf.elem.style.left = left;
+      if (cf.elem.style.width !== w)
+        cf.elem.style.width = w;
+    }
+  }
 
 }
 

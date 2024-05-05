@@ -63,6 +63,7 @@ button {
 }
 
 button {
+  position: relative;
   text-shadow:
     0 0 4px lime,
     0 0 40px lime,
@@ -123,15 +124,33 @@ button {
     0 -14px 4px lime,
     0 -18px 4px lime;
 }
+
+#minichart {
+  position: absolute;
+  left: 0; top: 0; width: 100%; height: 9vw;
+  z-index: 1;
+}
+
+#minichart .chart-freq {
+  position: absolute;
+  bottom: -1vw; left: 0;
+  height: 2vw; width: 1px;
+  background: linear-gradient(to bottom, rgb(0 255 0 / 36%), transparent);
+  border-left: none; border-right: none;
+  transition: transform 90ms;
+}
 </style>
 </head>
 <body>
 
 <div id=sample1></div>
 <div id=sample2></div>
+<span style="position: relative">
+  <div id="minichart"></div>
 <button>
   Loading...
 </button>
+</span>
 
 <div style="
   font-size: 1.9vh;
