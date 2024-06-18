@@ -1,5 +1,7 @@
 // @ts-check
 
+/// <reference types="coldsky" />
+
 const button = /** @type {HTMLButtonElement} */(document.querySelector('button'));
 button.onclick = startPlaying;
 
@@ -61,13 +63,22 @@ function startPlaying() {
 
   async function pumpFirehose() {
     const playing = currentPlaying = currentPlaying + 1;
+    let startTime = Date.now();
+    let totalMsgCount = 0;
 
-    for await (const blockList of coldsky.firehose()) {
+    // @ts-ignore
+    const cs = /** @type {import('coldsky')} */(coldsky);
+    for await (const blockList of cs.firehose()) {
       if (currentPlaying !== playing) return;
       for (const block of blockList) {
         msgCount +=
           (block.messages?.length || 0) +
           (block.unexpected?.length || 0);
+        if (!totalMsgCount) {
+          totalMsgCount = msgCount;
+          startTime = Date.now(); // reset timer, to account for load connection latency;
+        }
+
         if (block.messages?.length) {
           for (const rec of block.messages) {
             if (!rec.text) continue;
@@ -194,6 +205,10 @@ function startPlaying() {
  * }[]}
  */
 var chartFreqs = [];
+/** @type {HTMLElement} */
+var line100;
+/** @type {HTMLElement} */
+var line50;
 
 var CHART_FREQ_COUNT = 50;
 var CHART_FREQ_INTERVAL_MSEC = 1500;
@@ -239,11 +254,8 @@ function addChartFreq(msgCount) {
     let allEqual = true;
     for (const cf of chartFreqs) {
       const freq = cf.messages / (cf.end - cf.start) * 1000;
-      if (freq > maxFreq) {
-        maxFreq = freq;
-      }
-
       if (freq !== maxFreq) allEqual = false;
+      if (freq > maxFreq) maxFreq = freq;
     }
 
     const w = (92 / CHART_FREQ_COUNT).toFixed(1) + '%';
@@ -260,6 +272,28 @@ function addChartFreq(msgCount) {
         cf.elem.style.left = left;
       if (cf.elem.style.width !== w)
         cf.elem.style.width = w;
+    }
+
+    if (chartFreqs.length > 5 && !line100) {
+      line100 = document.createElement('div');
+      line50 = document.createElement('div');
+      line100.className = 'line-100';
+      line50.className = 'line-50';
+      line50.style.cssText = line100.style.cssText =
+        'position: absolute; bottom: 0; left: 0; width: 100%; height: 1px;' +
+        'background: lime; z-index: 1000; pointer-events: none;' +
+        'transition: transform 0.5s, opacity 0.5s';
+      minichart.appendChild(line100);
+      minichart.appendChild(line50);
+    }
+  
+    if (line100) {
+      line100.style.transform =
+        'translateY(-' + (0.1 + 0.7 * minichartHeightVw * Math.min(100, maxFreq) / maxFreq).toFixed(1) + 'vw)';
+      line50.style.transform =
+        'translateY(-' + (0.1 + 0.7 * minichartHeightVw * Math.min(50, maxFreq) / maxFreq).toFixed(1) + 'vw)';
+      line100.style.opacity = maxFreq > 100 ? '1' : '0';
+      line50.style.opacity = maxFreq > 50 ? '0.3' : '0';
     }
   }
 
