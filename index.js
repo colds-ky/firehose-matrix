@@ -274,7 +274,7 @@ function addChartFreq(msgCount) {
         cf.elem.style.width = w;
     }
 
-    if (chartFreqs.length > 5 && !line100) {
+    if (chartFreqs.length && !line100) {
       line100 = document.createElement('div');
       line50 = document.createElement('div');
       line100.className = 'line-100';
@@ -292,8 +292,8 @@ function addChartFreq(msgCount) {
         'translateY(-' + (0.1 + 0.7 * minichartHeightVw * Math.min(100, maxFreq) / maxFreq).toFixed(1) + 'vw)';
       line50.style.transform =
         'translateY(-' + (0.1 + 0.7 * minichartHeightVw * Math.min(50, maxFreq) / maxFreq).toFixed(1) + 'vw)';
-      line100.style.opacity = maxFreq > 100 ? '1' : '0';
-      line50.style.opacity = maxFreq > 50 ? '0.3' : '0';
+      line100.style.opacity = chartFreqs.length > 2 && maxFreq > 100 ? '1' : '0';
+      line50.style.opacity = chartFreqs.length > 2 && maxFreq > 50 ? '0.3' : '0';
     }
   }
 
@@ -309,3 +309,4 @@ function stopPlaying() {
 }
 
 button.textContent = 'Listen!';
+if (/start|play|listen/i.test(location.search || '')) startPlaying();
