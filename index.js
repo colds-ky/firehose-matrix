@@ -68,53 +68,51 @@ function startPlaying() {
 
     // @ts-ignore
     const cs = /** @type {import('coldsky')} */(coldsky);
-    for await (const blockList of cs.firehose()) {
+    for await (const block of cs.firehose()) {
       if (currentPlaying !== playing) return;
-      for (const block of blockList) {
-        msgCount +=
-          (block.messages?.length || 0) +
-          (block.unexpected?.length || 0);
-        if (!totalMsgCount) {
-          totalMsgCount = msgCount;
-          startTime = Date.now(); // reset timer, to account for load connection latency;
-        }
+      msgCount +=
+        (block.messages?.length || 0) +
+        (block.unexpected?.length || 0);
+      if (!totalMsgCount) {
+        totalMsgCount = msgCount;
+        startTime = Date.now(); // reset timer, to account for load connection latency;
+      }
 
-        if (block.messages?.length) {
-          for (const rec of block.messages) {
-            if (!rec.text) continue;
-            lastMsg = rec;
+      if (block.messages?.length) {
+        for (const rec of block.messages) {
+          if (!rec.text) continue;
+          lastMsg = rec;
 
-            if (flyingLetterCount < 600) {
-              lastLetter = Date.now();
-              flyingLetterCount++;
-              const letters = [...rec.text.replace(/\s/g, '')];
+          if (flyingLetterCount < 600) {
+            lastLetter = Date.now();
+            flyingLetterCount++;
+            const letters = [...rec.text.replace(/\s/g, '')];
 
 
-              const flyTimeSec = 6 + Math.random() * 30;
+            const flyTimeSec = 6 + Math.random() * 30;
 
-              const letterElem = document.createElement('div');
-              letterElem.className = 'letter';
-              letterElem.style.left = (Math.random() * 100) + '%';
-              letterElem.style.transitionDuration = flyTimeSec.toFixed(1) + 's';
+            const letterElem = document.createElement('div');
+            letterElem.className = 'letter';
+            letterElem.style.left = (Math.random() * 100) + '%';
+            letterElem.style.transitionDuration = flyTimeSec.toFixed(1) + 's';
 
-              for (let i = 0; i < Math.min(5, letters.length); i++) {
-                const letter = letters[i];
-                const letterXElem = document.createElement('div');
-                letterXElem.className = 'letter-' + (i + 1);
-                letterXElem.textContent = letter.toUpperCase();
-                if (letterElem.firstChild) letterElem.insertBefore(letterXElem, letterElem.firstChild);
-                else letterElem.appendChild(letterXElem);
-              }
-
-              document.body.appendChild(letterElem);
-              setTimeout(() => {
-                letterElem.style.transform = 'translateY(125vh)';
-                setTimeout(() => {
-                  letterElem.remove();
-                  flyingLetterCount--;
-                }, flyTimeSec * 1000 + 10);
-              }, 1);
+            for (let i = 0; i < Math.min(5, letters.length); i++) {
+              const letter = letters[i];
+              const letterXElem = document.createElement('div');
+              letterXElem.className = 'letter-' + (i + 1);
+              letterXElem.textContent = letter.toUpperCase();
+              if (letterElem.firstChild) letterElem.insertBefore(letterXElem, letterElem.firstChild);
+              else letterElem.appendChild(letterXElem);
             }
+
+            document.body.appendChild(letterElem);
+            setTimeout(() => {
+              letterElem.style.transform = 'translateY(125vh)';
+              setTimeout(() => {
+                letterElem.remove();
+                flyingLetterCount--;
+              }, flyTimeSec * 1000 + 10);
+            }, 1);
           }
         }
       }
