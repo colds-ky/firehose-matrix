@@ -71,15 +71,14 @@ function startPlaying() {
     for await (const block of cs.firehose()) {
       if (currentPlaying !== playing) return;
       msgCount +=
-        (block.messages?.length || 0) +
-        (block.unexpected?.length || 0);
+        block?.length || 0;
       if (!totalMsgCount) {
         totalMsgCount = msgCount;
         startTime = Date.now(); // reset timer, to account for load connection latency;
       }
 
-      if (block.messages?.length) {
-        for (const rec of block.messages) {
+      if (block?.length) {
+        for (const rec of block) {
           if (!rec.text) continue;
           lastMsg = rec;
 
